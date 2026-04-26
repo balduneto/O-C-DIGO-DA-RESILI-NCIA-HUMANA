@@ -15,8 +15,8 @@
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background-color: #ffffff;
-            color: #0f172a; /* Slate 900 - Quase preto para alto contraste, mas menos agressivo que #000 */
-            overflow: hidden; /* Previne rolagem, comportamento de slide */
+            color: #0f172a; 
+            overflow: hidden; 
             margin: 0;
             padding: 0;
             user-select: none;
@@ -44,6 +44,8 @@
             padding: 4rem 8rem;
             box-sizing: border-box;
             background-color: #ffffff;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .slide.active {
@@ -64,7 +66,7 @@
             transform: translateY(0);
         }
 
-        /* Delays em Cascata para os elementos */
+        /* Delays em Cascata */
         .slide.active .delay-1 { transition-delay: 0.2s; }
         .slide.active .delay-2 { transition-delay: 0.4s; }
         .slide.active .delay-3 { transition-delay: 0.6s; }
@@ -82,7 +84,7 @@
         .accent-blue { color: #1D3557; }
         .accent-cyan { color: #457B9D; }
 
-        /* Grade Geométrica Sutil no Fundo */
+        /* Grade Geométrica */
         .bg-grid {
             background-image: 
                 linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
@@ -90,9 +92,9 @@
             background-size: 50px 50px;
         }
 
-        /* Navegação */
+        /* Controles Base */
         .controls {
-            position: absolute;
+            position: fixed;
             bottom: 2rem;
             right: 4rem;
             z-index: 100;
@@ -101,7 +103,7 @@
         }
 
         .progress-bar {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             height: 6px;
@@ -111,24 +113,90 @@
         }
 
         .sources {
-            position: absolute;
+            position: fixed;
             bottom: 2rem;
             left: 4rem;
             font-size: 0.75rem;
             color: #64748b;
             max-width: 50%;
+            pointer-events: none;
         }
 
-        /* Responsividade para telas menores */
+        /* --------- SISTEMA INTERATIVO DE INSIGHTS --------- */
+        @keyframes insight-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .btn-insight {
+            position: absolute;
+            top: 2rem;
+            right: 4rem;
+            z-index: 40;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: insight-float 3s ease-in-out infinite;
+        }
+
+        .btn-insight:hover {
+            animation: none;
+            transform: scale(1.02);
+        }
+
+        .insight-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(0,0,0,0.1);
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 150;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+        }
+
+        .slide.insight-open .insight-overlay {
+            transform: translateX(0);
+        }
+
+        /* Responsividade */
         @media (max-width: 1024px) {
-            .slide { padding: 3rem 4rem; }
+            .slide { padding: 4rem; justify-content: flex-start; }
             .big-number { font-size: 5rem; }
+            .btn-insight { right: 2rem; top: 1.5rem; }
         }
         @media (max-width: 768px) {
-            .slide { padding: 2rem; }
-            .big-number { font-size: 4rem; }
-            .controls { right: 2rem; bottom: 1rem; }
-            .sources { left: 2rem; bottom: 1rem; max-width: 70%; }
+            .slide { padding: 5rem 1.5rem 6rem 1.5rem; justify-content: flex-start; }
+            .big-number { font-size: 3.5rem; }
+            .controls { right: 1rem; bottom: 1rem; gap: 0.5rem; }
+            .controls button { width: 3rem; height: 3rem; }
+            .controls button svg { width: 1.5rem; height: 1.5rem; }
+            .sources { left: 1rem; bottom: 1rem; max-width: 65%; font-size: 0.65rem; display: none; }
+            
+            /* Ajuste Insight Overlay para Mobile */
+            .btn-insight { top: 1rem; right: 1rem; padding: 0.5rem 1rem; font-size: 0.75rem; }
+            .insight-overlay {
+                max-width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(0,0,0,0.1);
+                top: auto;
+                height: 75vh;
+                transform: translateY(100%);
+                padding: 2rem 1.5rem;
+                border-radius: 20px 20px 0 0;
+            }
+            .slide.insight-open .insight-overlay {
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -138,17 +206,37 @@
 
         <!-- SLIDE 0: CAPA -->
         <section class="slide active">
-            <div class="max-w-6xl">
-                <p class="anim-el text-xl font-bold tracking-widest text-gray-400 uppercase mb-4">Relatório Executivo de Inteligência</p>
-                <h1 class="anim-el delay-1 text-7xl md:text-8xl font-black leading-tight tracking-tighter text-black mb-6">
+            <!-- Botão Insight -->
+            <button class="btn-insight anim-el delay-4 flex items-center gap-2 bg-black text-white px-5 py-3 rounded-full hover:bg-gray-800 transition text-sm font-bold border border-gray-700" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-400"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <!-- Painel Overlay -->
+            <div class="insight-overlay text-left">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="lightbulb" class="w-6 h-6 text-yellow-500"></i> Estratégia Base</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100 transition"><i data-lucide="x" class="w-4 h-4 text-black"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Bem-vindo ao <strong>Código da Resiliência Humana</strong>. Este relatório traduz dados demográficos complexos e descobertas laboratoriais de ponta em um mapa compreensível, ilustrando como a humanidade está ativamente reescrevendo seus próprios limites biológicos.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 mb-3 border-l-2 border-red-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A convergência entre biotecnologia avançada (como CRISPR e mRNA) e a Inteligência Artificial deixou o campo da ficção científica. Hoje, ela representa a <strong>nova fronteira do capital geopolítico</strong>. Nações e corporações que não dominarem essas patentes se tornarão meras consumidoras reféns das inovações estrangeiras.</p>
+                </div>
+            </div>
+
+            <div class="max-w-6xl mt-8 md:mt-0">
+                <p class="anim-el text-sm md:text-xl font-bold tracking-widest text-gray-400 uppercase mb-4">Relatório Executivo de Inteligência</p>
+                <h1 class="anim-el delay-1 text-5xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tighter text-black mb-6">
                     O CÓDIGO DA<br>
                     <span class="accent-red">RESILIÊNCIA HUMANA</span>
                 </h1>
-                <p class="anim-el delay-2 text-2xl text-gray-600 font-light max-w-3xl">
+                <p class="anim-el delay-2 text-lg md:text-2xl text-gray-600 font-light max-w-3xl">
                     Fronteiras Tecnológicas, Doenças do Futuro e a Economia da Longevidade. O mapa global da inovação biotecnológica (2025 - 2050).
                 </p>
-                <div class="anim-el delay-3 mt-12 flex items-center gap-4">
-                    <button onclick="nextSlide()" class="px-8 py-4 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition flex items-center gap-2">
+                <div class="anim-el delay-3 mt-8 md:mt-12 flex items-center gap-4">
+                    <button onclick="nextSlide()" class="px-6 py-3 md:px-8 md:py-4 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition flex items-center gap-2 text-sm md:text-base">
                         Iniciar Apresentação <i data-lucide="arrow-right"></i>
                     </button>
                 </div>
@@ -157,123 +245,188 @@
 
         <!-- SLIDE 1: TRANSIÇÃO EPIDEMIOLÓGICA -->
         <section class="slide">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
-                <div class="anim-el">
-                    <h2 class="text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">01. O Panorama Global</h2>
-                    <h3 class="text-5xl font-black leading-tight mb-8">O FARDO DAS<br>DOENÇAS CRÔNICAS</h3>
-                    <p class="text-xl text-gray-600 mb-6">De um total de 68 milhões de mortes anuais, apenas 10 causas respondem por quase toda a letalidade global, lideradas por doenças isquêmicas e AVC.</p>
-                    
-                    <div class="bg-gray-50 p-6 rounded-2xl border-l-4 border-black">
-                        <h4 class="font-bold flex items-center gap-2"><i data-lucide="brain" class="w-5 h-5"></i> A Pandemia Invisível</h4>
-                        <p class="text-gray-600 mt-2">Mais de <strong>1 bilhão</strong> de pessoas vivem com distúrbios mentais. Intervenções tecnológicas poderiam injetar <strong>US$ 4,4 trilhões</strong> de volta no PIB global até 2050.</p>
-                    </div>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay text-left">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="activity" class="w-6 h-6 text-yellow-500"></i> O Ponto de Virada</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
-                <div class="anim-el delay-1 text-center">
-                    <div class="big-number accent-red">57%</div>
-                    <p class="text-2xl font-bold mt-4 uppercase tracking-wider">Dos óbitos globais<br>(39 milhões de vidas)</p>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A "Transição Epidemiológica" é um conceito que descreve como, graças aos antibióticos e vacinas, a humanidade parou de morrer majoritariamente por infecções (como a peste ou cólera) e passou a sucumbir devido a doenças degenerativas crônicas atreladas à idade avançada.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 mb-3 border-l-2 border-blue-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Vivemos uma brutal <strong>pressão bidimensional</strong>: os sistemas de saúde globais estão falindo financeiramente para tratar o câncer e cardiopatias crônicas, ao mesmo tempo em que a ameaça de patógenos aéreos altamente letais retornou. A conta da saúde pública mundial não fecha mais na lógica do tratamento reativo.</p>
                 </div>
             </div>
-            <div class="sources delay-2 anim-el">Fontes: OMS (GHE 2024/2025) [1, 2, 3]; McKinsey Health Institute [4, 5].</div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
+                <div class="anim-el mt-4 md:mt-0">
+                    <h2 class="text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">01. O Panorama Global</h2>
+                    <h3 class="text-4xl md:text-5xl font-black leading-tight mb-6 md:mb-8">O FARDO DAS<br>DOENÇAS CRÔNICAS</h3>
+                    <p class="text-base md:text-xl text-gray-600 mb-6">De um total de 68 milhões de mortes anuais, apenas 10 causas respondem por quase toda a letalidade global, lideradas por doenças isquêmicas e AVC.</p>
+                    
+                    <div class="bg-gray-50 p-4 md:p-6 rounded-2xl border-l-4 border-black">
+                        <h4 class="font-bold flex items-center gap-2 text-sm md:text-base"><i data-lucide="brain" class="w-5 h-5"></i> A Pandemia Invisível</h4>
+                        <p class="text-gray-600 mt-2 text-sm md:text-base">Mais de <strong>1 bilhão</strong> de pessoas vivem com distúrbios mentais. Intervenções tecnológicas poderiam injetar <strong>US$ 4,4 trilhões</strong> de volta no PIB global até 2050.</p>
+                    </div>
+                </div>
+                <div class="anim-el delay-1 text-center mb-8 md:mb-0">
+                    <div class="big-number accent-red">57%</div>
+                    <p class="text-lg md:text-2xl font-bold mt-2 md:mt-4 uppercase tracking-wider">Dos óbitos globais<br>(39 milhões de vidas)</p>
+                </div>
+            </div>
+            <div class="sources anim-el">Fontes: OMS (GHE 2024/2025); McKinsey Health Institute.</div>
         </section>
 
         <!-- SLIDE 2: A CRISE METABÓLICA 2050 -->
         <section class="slide">
-            <div class="flex flex-col h-full justify-center">
-                <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">Projeção 2050</h2>
-                <h3 class="anim-el delay-1 text-5xl font-black leading-tight mb-12">O ACELERADOR DO COLAPSO</h3>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="trending-down" class="w-6 h-6 text-red-500"></i> Longevidade x Custo</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Temos dois termos vitais aqui: <em>Lifespan</em> (quantos anos você vive) e <em>Healthspan</em> (quantos desses anos você vive saudável e funcional). O avanço da obesidade é o gatilho central para a síndrome metabólica, que destrói o healthspan, incapacitando o indivíduo muito antes do fim de sua vida.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 mb-3 border-l-2 border-red-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Em 2050, teremos mais idosos (1.6 Bi) do que crianças. O modelo econômico de previdência colapsará se não estabelecermos a <strong>"Aptidão para a Longevidade"</strong>. O mercado precisará de trabalhadores de 70+ anos funcionais, transformando a biomedicina preventiva em ativo macroeconômico essencial.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col h-full justify-center mt-4 md:mt-0">
+                <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">Projeção 2050</h2>
+                <h3 class="anim-el delay-1 text-4xl md:text-5xl font-black leading-tight mb-8 md:mb-12">O ACELERADOR DO COLAPSO</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Infográfico 1 -->
-                    <div class="anim-el delay-1 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-red-500 transition">
-                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="activity" class="w-48 h-48"></i></div>
-                        <h4 class="text-7xl font-black accent-red mb-4">60%</h4>
-                        <p class="text-xl font-bold mb-2">Adultos com Obesidade</p>
-                        <p class="text-gray-500 text-sm">Atingindo 3,8 bilhões de pessoas globalmente. O motor principal da perda do *healthspan*.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-0">
+                    <div class="anim-el delay-1 bg-white border border-gray-200 p-6 md:p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-red-500 transition">
+                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="activity" class="w-32 h-32 md:w-48 md:h-48"></i></div>
+                        <h4 class="text-5xl md:text-7xl font-black accent-red mb-2 md:mb-4">60%</h4>
+                        <p class="text-lg md:text-xl font-bold mb-2">Adultos com Obesidade</p>
+                        <p class="text-gray-500 text-xs md:text-sm">Atingindo 3,8 bilhões de pessoas globalmente. O motor principal da perda do *healthspan*.</p>
                     </div>
-                    <!-- Infográfico 2 -->
-                    <div class="anim-el delay-2 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-blue-500 transition">
-                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="users" class="w-48 h-48"></i></div>
-                        <h4 class="text-7xl font-black accent-blue mb-4">1.6 Bi</h4>
-                        <p class="text-xl font-bold mb-2">Idosos (65+ anos)</p>
-                        <p class="text-gray-500 text-sm">O ápice da "Economia da Longevidade". Pela primeira vez, superando toda a população global de crianças.</p>
+                    <div class="anim-el delay-2 bg-white border border-gray-200 p-6 md:p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-blue-500 transition">
+                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="users" class="w-32 h-32 md:w-48 md:h-48"></i></div>
+                        <h4 class="text-5xl md:text-7xl font-black accent-blue mb-2 md:mb-4">1.6 Bi</h4>
+                        <p class="text-lg md:text-xl font-bold mb-2">Idosos (65+ anos)</p>
+                        <p class="text-gray-500 text-xs md:text-sm">O ápice da "Economia da Longevidade". Pela primeira vez, superando toda a população global de crianças.</p>
                     </div>
-                    <!-- Infográfico 3 -->
-                    <div class="anim-el delay-3 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden bg-gray-900 text-white">
-                        <div class="absolute -right-8 -top-8 opacity-10"><i data-lucide="zap" class="w-48 h-48"></i></div>
-                        <h4 class="text-7xl font-black text-white mb-4">746 Mi</h4>
-                        <p class="text-xl font-bold mb-2">Crianças/Adolescentes</p>
-                        <p class="text-gray-400 text-sm">Com sobrepeso projetado. Uma bomba-relógio para a solvência dos sistemas de saúde.</p>
+                    <div class="anim-el delay-3 bg-white border border-gray-200 p-6 md:p-8 rounded-3xl shadow-lg relative overflow-hidden bg-gray-900 text-white">
+                        <div class="absolute -right-8 -top-8 opacity-10"><i data-lucide="zap" class="w-32 h-32 md:w-48 md:h-48"></i></div>
+                        <h4 class="text-5xl md:text-7xl font-black text-white mb-2 md:mb-4">746 Mi</h4>
+                        <p class="text-lg md:text-xl font-bold mb-2">Crianças/Adolescentes</p>
+                        <p class="text-gray-400 text-xs md:text-sm">Com sobrepeso projetado. Uma bomba-relógio para a solvência dos sistemas de saúde.</p>
                     </div>
                 </div>
             </div>
-            <div class="sources delay-4 anim-el">Fontes: The Lancet / IHME 2025; Fórum Econômico Mundial (2025) [6].</div>
         </section>
 
         <!-- SLIDE 3: AMEAÇAS SISTÊMICAS -->
         <section class="slide bg-red-600 text-white">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-transparent shadow-lg" onclick="toggleInsight(event)">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay text-black">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl flex items-center gap-2"><i data-lucide="shield-alert" class="w-6 h-6 text-red-600"></i> Falência das Defesas</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">AMR (Resistência Antimicrobiana) ocorre quando o uso irresponsável de antibióticos na medicina e agropecuária seleciona bactérias mutantes ("superbactérias") que não podem mais ser mortas pelos remédios atuais. Já a "Doença X" é um termo da OMS para a certeza matemática de que um vírus letal e desconhecido surgirá em breve.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 mb-3 border-l-2 border-red-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">O mercado farmacêutico tradicional para antibióticos fracassou: as gigantes recuaram 35% em P&D porque não é lucrativo inventar um remédio para uso estritamente emergencial. Sem novos modelos de subsídios públicos ou startups *deep tech*, enfrentaremos cirurgias e arranhões voltando a ser fatais como na Idade Média.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
                 <div class="anim-el">
                     <div class="big-number text-white">39 Mi</div>
-                    <p class="text-3xl font-bold mt-4">Mortes projetadas por<br>Superbactérias até 2050</p>
+                    <p class="text-2xl md:text-3xl font-bold mt-4">Mortes projetadas por<br>Superbactérias até 2050</p>
                 </div>
                 <div class="anim-el delay-1">
-                    <h2 class="text-2xl font-bold uppercase tracking-widest text-red-200 mb-4">Ameaças Sistêmicas</h2>
+                    <h2 class="text-xl md:text-2xl font-bold uppercase tracking-widest text-red-200 mb-4">Ameaças Sistêmicas</h2>
                     
-                    <div class="mb-8 border-l-4 border-white pl-6">
-                        <h3 class="text-3xl font-black mb-2">Resistência Antimicrobiana (AMR)</h3>
-                        <p class="text-red-100 text-lg">A crise silenciosa. O impacto econômico pode encolher o PIB global em <strong>US$ 1,7 Trilhão</strong> apenas no ano de 2050.</p>
+                    <div class="mb-8 border-l-4 border-white pl-4 md:pl-6">
+                        <h3 class="text-2xl md:text-3xl font-black mb-2">Resistência Antimicrobiana (AMR)</h3>
+                        <p class="text-red-100 text-base md:text-lg">A crise silenciosa. O impacto econômico pode encolher o PIB global em <strong>US$ 1,7 Trilhão</strong> apenas no ano de 2050.</p>
                     </div>
 
-                    <div class="border-l-4 border-white pl-6">
-                        <h3 class="text-3xl font-black mb-2">Clima & "Doença X"</h3>
-                        <p class="text-red-100 text-lg">O colapso climático expande vetores (250 mil mortes/ano extras). 25 famílias virais monitoradas para o próximo salto zoonótico.</p>
+                    <div class="border-l-4 border-white pl-4 md:pl-6">
+                        <h3 class="text-2xl md:text-3xl font-black mb-2">Clima & "Doença X"</h3>
+                        <p class="text-red-100 text-base md:text-lg">O colapso climático expande vetores (250 mil mortes/ano extras). 25 famílias virais monitoradas para o próximo salto zoonótico.</p>
                     </div>
                 </div>
             </div>
-            <div class="sources delay-2 anim-el text-red-200">Fontes: Projeto GRAM / IHME; Banco Mundial; OMS R&D Blueprint [7, 8, 9, 10].</div>
+            <div class="sources anim-el text-red-200">Fontes: Projeto GRAM / IHME; Banco Mundial; OMS.</div>
         </section>
 
         <!-- SLIDE 4: EIXO DO PODER GLOBAL -->
         <section class="slide">
-            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-8 text-center">Geopolítica da Inovação</h2>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="globe" class="w-6 h-6 text-blue-600"></i> Hegemonia Tecnológica</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A "tríplice hélice" da inovação se forma quando o Governo financia, a Academia inventa e as Startups/Biotecnológicas (Setor Privado) empacotam a solução para o consumidor final. A liderança mundial depende da perfeita sincronia dessas três forças.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 mb-3 border-l-2 border-blue-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A guerra fria do século XXI baseia-se em <strong>"Florestas de Patentes"</strong>. A China aposta no volume estatal colossal, dominando modificações CRISPR focadas na agricultura para evitar colapsos alimentares climáticos. Os EUA seguem no topo da IA aplicada à saúde, impulsionados pela força irrefreável dos fundos de Venture Capital.</p>
+                </div>
+            </div>
+
+            <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-8 text-center mt-4 md:mt-0">Geopolítica da Inovação</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-center">
-                <!-- Ásia -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-center mb-8 md:mb-0">
                 <div class="anim-el delay-1 flex flex-col items-center text-center">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                        <i data-lucide="globe-2" class="w-12 h-12 text-black"></i>
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                        <i data-lucide="globe-2" class="w-10 h-10 md:w-12 md:h-12 text-black"></i>
                     </div>
-                    <h3 class="text-2xl font-black mb-2 uppercase">Ásia no Topo</h3>
-                    <p class="text-gray-600 mb-6">Domínio agressivo em edição genética e saúde digital.</p>
+                    <h3 class="text-xl md:text-2xl font-black mb-2 uppercase">Ásia no Topo</h3>
+                    <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Domínio agressivo em edição genética e saúde digital.</p>
                     <div class="bg-gray-50 p-4 rounded-xl w-full">
-                        <span class="block text-4xl font-black accent-red mb-1">101.400</span>
-                        <span class="text-sm font-bold text-gray-500 uppercase">Patentes Válidas (Academia Chinesa)</span>
+                        <span class="block text-3xl md:text-4xl font-black accent-red mb-1">101.400</span>
+                        <span class="text-xs md:text-sm font-bold text-gray-500 uppercase">Patentes Válidas (Academia Chinesa)</span>
                     </div>
                 </div>
 
-                <!-- EUA -->
                 <div class="anim-el delay-2 flex flex-col items-center text-center">
-                    <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                        <i data-lucide="microscope" class="w-12 h-12 accent-blue"></i>
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-blue-50 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                        <i data-lucide="microscope" class="w-10 h-10 md:w-12 md:h-12 accent-blue"></i>
                     </div>
-                    <h3 class="text-2xl font-black mb-2 uppercase">EUA & Medicina</h3>
-                    <p class="text-gray-600 mb-6">Monopólio de Venture Capital em IA de precisão.</p>
+                    <h3 class="text-xl md:text-2xl font-black mb-2 uppercase">EUA & Medicina</h3>
+                    <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Monopólio de Venture Capital em IA de precisão.</p>
                     <div class="bg-gray-50 p-4 rounded-xl w-full">
-                        <span class="block text-4xl font-black accent-blue mb-1">5.800+</span>
-                        <span class="text-sm font-bold text-gray-500 uppercase">Patentes Ativas (Harvard)</span>
+                        <span class="block text-3xl md:text-4xl font-black accent-blue mb-1">5.800+</span>
+                        <span class="text-xs md:text-sm font-bold text-gray-500 uppercase">Patentes Ativas (Harvard)</span>
                     </div>
                 </div>
 
-                <!-- Europa -->
                 <div class="anim-el delay-3 flex flex-col items-center text-center">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                        <i data-lucide="shield-check" class="w-12 h-12 text-black"></i>
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                        <i data-lucide="shield-check" class="w-10 h-10 md:w-12 md:h-12 text-black"></i>
                     </div>
-                    <h3 class="text-2xl font-black mb-2 uppercase">Europa (ALE/UK)</h3>
-                    <p class="text-gray-600 mb-6">Liderança em eficiência e consórcios transnacionais.</p>
+                    <h3 class="text-xl md:text-2xl font-black mb-2 uppercase">Europa (ALE/UK)</h3>
+                    <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Liderança em eficiência e consórcios transnacionais.</p>
                     <div class="bg-gray-50 p-4 rounded-xl w-full">
-                        <span class="block text-xl font-black text-black mb-1">Fraunhofer</span>
-                        <span class="text-sm font-bold text-gray-500 uppercase">Líder EU em RNA (TRL 4-5)</span>
+                        <span class="block text-lg md:text-xl font-black text-black mb-1">Fraunhofer</span>
+                        <span class="text-xs md:text-sm font-bold text-gray-500 uppercase">Líder EU em RNA (TRL 4-5)</span>
                     </div>
                 </div>
             </div>
@@ -281,110 +434,179 @@
 
         <!-- SLIDE 5: ARSENAL TECNOLÓGICO -->
         <section class="slide">
-            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">O Mapa da Disrupção</h2>
-            <h3 class="anim-el delay-1 text-5xl font-black leading-tight mb-12">TECNOLOGIAS DE FRONTEIRA</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Card 1 -->
-                <div class="anim-el delay-2 border-l-8 border-red-600 pl-6 py-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i data-lucide="dna" class="text-red-600 w-8 h-8"></i>
-                        <h4 class="text-2xl font-black">Plataformas mRNA (TRL 8-9)</h4>
-                    </div>
-                    <p class="text-gray-600">Além de vacinas virais (Missão 100 Dias). Combinação investigacional mRNA-4157 na oncologia reduziu recidivas agressivas de melanoma em 44%.</p>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="rocket" class="w-6 h-6 text-blue-600"></i> A Era das "Tech-Bio"</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
-
-                <!-- Card 2 -->
-                <div class="anim-el delay-3 border-l-8 border-blue-600 pl-6 py-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i data-lucide="cpu" class="text-blue-600 w-8 h-8"></i>
-                        <h4 class="text-2xl font-black">IA no Drug Discovery</h4>
-                    </div>
-                    <p class="text-gray-600">Modelagem profunda de moléculas atinge assustadores <strong>80% a 90% de sucesso</strong> toxicológico na Fase I, cortando anos de pesquisa para meses.</p>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Avalia-se a viabilidade destas tecnologias através do **TRL** (Technology Readiness Level), variando de TRL 1 (pesquisa básica) a TRL 9 (produto aprovado nas farmácias). Tecnologias de edição (CRISPR) e RNA já operam em TRL avançado, rompendo a barreira do "futuro distante".</p>
                 </div>
-
-                <!-- Card 3 -->
-                <div class="anim-el delay-4 border-l-8 border-black pl-6 py-2 mt-4">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i data-lucide="pill" class="text-black w-8 h-8"></i>
-                        <h4 class="text-2xl font-black">Senolíticos (Geroscience)</h4>
-                    </div>
-                    <p class="text-gray-600">Coquetéis "D+Q" e vacinas como SenoVax (TRL 5-6) visam eliminar células envelhecidas (zumbis) para restaurar tecidos e combater Alzheimer e câncer.</p>
-                </div>
-
-                <!-- Card 4 -->
-                <div class="anim-el delay-4 border-l-8 border-gray-400 pl-6 py-2 mt-4">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i data-lucide="printer" class="text-gray-500 w-8 h-8"></i>
-                        <h4 class="text-2xl font-black">Edição Genética e Bioimpressão 3D</h4>
-                    </div>
-                    <p class="text-gray-600">Terapias in vivo (CRISPR) curando doenças antes intratáveis. Bioimpressão de tecidos complexos evoluindo para transplantes maciços.</p>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-green-600 mb-3 border-l-2 border-green-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Houve uma inversão de lógica de mercado. As empresas farmacêuticas tornaram-se companhias de dados (*Tech-bio*). A Inteligência artificial prevê a biologia eliminando, inclusive, os demorados e cruéis testes em animais através do conceito de "Células Virtuais", destravando o engarrafamento regulatório global.</p>
                 </div>
             </div>
-            <div class="sources delay-4 anim-el mt-8">Fontes: CEPI 3.0; Moderna Clinical Data; Global Readiness Index [10-14].</div>
+
+            <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2 mt-4 md:mt-0">O Mapa da Disrupção</h2>
+            <h3 class="anim-el delay-1 text-4xl md:text-5xl font-black leading-tight mb-8 md:mb-12">TECNOLOGIAS DE FRONTEIRA</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-8 md:mb-0">
+                <div class="anim-el delay-2 border-l-8 border-red-600 pl-4 md:pl-6 py-2 bg-gray-50 rounded-r-xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="dna" class="text-red-600 w-6 h-6 md:w-8 md:h-8"></i>
+                        <h4 class="text-xl md:text-2xl font-black">Plataformas mRNA (TRL 8-9)</h4>
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600">Além de vacinas virais (Missão 100 Dias). Combinação investigacional mRNA-4157 na oncologia reduziu recidivas agressivas de melanoma em 44%.</p>
+                </div>
+
+                <div class="anim-el delay-3 border-l-8 border-blue-600 pl-4 md:pl-6 py-2 bg-gray-50 rounded-r-xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="cpu" class="text-blue-600 w-6 h-6 md:w-8 md:h-8"></i>
+                        <h4 class="text-xl md:text-2xl font-black">IA no Drug Discovery</h4>
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600">Modelagem profunda de moléculas atinge assustadores <strong>80% a 90% de sucesso</strong> toxicológico na Fase I, cortando anos de pesquisa para meses.</p>
+                </div>
+
+                <div class="anim-el delay-4 border-l-8 border-black pl-4 md:pl-6 py-2 md:mt-4 bg-gray-50 rounded-r-xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="pill" class="text-black w-6 h-6 md:w-8 md:h-8"></i>
+                        <h4 class="text-xl md:text-2xl font-black">Senolíticos (Geroscience)</h4>
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600">Coquetéis "D+Q" e vacinas como SenoVax visam eliminar células envelhecidas ("zumbis") para restaurar tecidos e combater Alzheimer e câncer prematuros.</p>
+                </div>
+
+                <div class="anim-el delay-4 border-l-8 border-gray-400 pl-4 md:pl-6 py-2 md:mt-4 bg-gray-50 rounded-r-xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="printer" class="text-gray-500 w-6 h-6 md:w-8 md:h-8"></i>
+                        <h4 class="text-xl md:text-2xl font-black">Edição Genética / Bioimpressão</h4>
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600">Terapias in vivo (CRISPR) curando doenças incuráveis; Bioimpressão avançando de organoides focais para desafios anatômicos vascularizados em 3D.</p>
+                </div>
+            </div>
         </section>
 
         <!-- SLIDE 6: BRASIL PROTAGONISMO -->
         <section class="slide bg-black text-white">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
-                <div class="anim-el delay-1 text-center lg:text-left">
-                    <div class="big-number text-green-400">59k</div>
-                    <p class="text-3xl font-bold mt-4 uppercase">Pedidos de Patentes Biotec (2010-2025)</p>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-200 transition text-sm font-bold shadow-lg" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay text-black">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl flex items-center gap-2"><i data-lucide="compass" class="w-6 h-6 text-green-600"></i> Eixo Sul-Sul</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
-                <div class="anim-el">
-                    <h2 class="text-2xl font-bold uppercase tracking-widest text-gray-400 mb-4">Soberania Sul-Sul</h2>
-                    <h3 class="text-5xl font-black mb-6 leading-tight">O BRASIL NO<br>EPICENTRO DA INOVAÇÃO</h3>
-                    <p class="text-gray-300 text-xl mb-6">Rompendo a lógica da mera produção fabril. O Brasil se consolida não apenas como consumidor, mas como <strong>hub criador</strong> de Propriedade Intelectual global.</p>
-                    <p class="text-green-400 font-bold text-lg"><i data-lucide="check-circle" class="inline w-5 h-5 mb-1"></i> INPI atesta mais de 23.500 submissões ativas e mais de 13.600 concedidas até 2025.</p>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Historicamente, as inovações (Patentes) ficavam retidas nos países ricos do Hemisfério Norte (EUA, Europa), enquanto o Sul Global (Brasil, África) funcionava apenas como montador emergencial ou fornecedor de matéria-prima durante crises (ex: Covid-19).</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-green-600 mb-3 border-l-2 border-green-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">As brutais 59.000 patentes depositadas simbolizam a **emancipação geopolítica** brasileira. O país saiu da passividade reativa para a vanguarda criativa, formando alianças transoceânicas diretas (com África e Europa) para arquitetar a soberania e suficiência tecnológica no mercado mais caro do mundo.</p>
                 </div>
             </div>
-            <div class="sources delay-2 anim-el text-gray-500">Fonte: Auditoria Instituto Nacional da Propriedade Industrial (INPI) 2025 [15].</div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full">
+                <div class="anim-el delay-1 text-center lg:text-left mt-4 md:mt-0">
+                    <div class="big-number text-green-400">59k</div>
+                    <p class="text-xl md:text-3xl font-bold mt-2 md:mt-4 uppercase">Pedidos de Patentes Biotec</p>
+                    <p class="text-gray-400 mt-2">(Depósitos entre 2010 e 2025)</p>
+                </div>
+                <div class="anim-el mb-8 md:mb-0">
+                    <h2 class="text-lg md:text-2xl font-bold uppercase tracking-widest text-gray-400 mb-4">Soberania Geopolítica</h2>
+                    <h3 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 leading-tight">O BRASIL NO<br>EPICENTRO DA INOVAÇÃO</h3>
+                    <p class="text-gray-300 text-base md:text-xl mb-6">Rompendo a lógica da mera produção fabril emergencial. O Brasil se consolida não apenas como consumidor passivo, mas como <strong>hub formulador</strong> de Propriedade Intelectual.</p>
+                    <p class="text-green-400 font-bold text-sm md:text-lg bg-white/10 p-4 rounded-xl border border-green-400/30">
+                        <i data-lucide="check-circle" class="inline w-5 h-5 mb-1"></i> O INPI atesta robustez: mais de 23.500 patentes em tramitação e 13.600 já concedidas consolidadas.
+                    </p>
+                </div>
+            </div>
         </section>
 
         <!-- SLIDE 7: VANGUARDA BRASILEIRA -->
         <section class="slide">
-            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-10 text-center">Instituições Nacionais de Vanguarda</h2>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="building-2" class="w-6 h-6 text-black"></i> Tríplice Hélice Brasileira</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Laboratórios abertos (Open Labs) e incubadoras são pontes que pegam o conhecimento preso em teses acadêmicas e o transformam em pílulas, testes rápidos ou softwares de inteligência artificial que podem ser comprados pelo SUS e hospitais privados.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-black mb-3 border-l-2 border-black pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A infraestrutura brasileira impressiona globais: do primeiro laboratório BSL-4 da América Latina (para germes mortíferos) conectado a um acelerador de luz Síncrotron (Sirius), até testes virais entregues em 20 min. O mercado corporativo (*Hospitais Einstein, Sírio*) já atua como Venture Capital acelerando centenas de deep-techs locais.</p>
+                </div>
+            </div>
+
+            <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-6 md:mb-10 text-center mt-4 md:mt-0">Instituições Nacionais de Vanguarda</h2>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="anim-el delay-1 bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                    <h4 class="font-black text-xl mb-2 text-black">Fiocruz</h4>
-                    <p class="text-sm text-gray-600 mb-4">Expansão global com hub em Portugal. Testes rápidos de 20 min (Hantavírus) e biocápsulas ecológicas (TRL 8-9).</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 md:mb-0">
+                <div class="anim-el delay-1 bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-md hover:border-black transition">
+                    <h4 class="font-black text-lg md:text-xl mb-2 text-black">Fiocruz</h4>
+                    <p class="text-xs md:text-sm text-gray-600">Expansão global formidável (Hub fixo em Portugal). Patentes diretas em mercado prático: testes de 20 min (Hantavírus) e cápsulas larvicidas (TRL 8-9).</p>
                 </div>
                 
-                <div class="anim-el delay-2 bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                    <h4 class="font-black text-xl mb-2 text-black">CNPEM (Sirius)</h4>
-                    <p class="text-sm text-gray-600 mb-4">Acelerador de partículas e o novo Orion (BSL-4) para modelagem rápida molecular de vírus (TRL 3-5).</p>
+                <div class="anim-el delay-2 bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-md hover:border-black transition">
+                    <h4 class="font-black text-lg md:text-xl mb-2 text-black">CNPEM (Sirius)</h4>
+                    <p class="text-xs md:text-sm text-gray-600">O gigante de Campinas: luz síncrotron atrelada ao inédito Orion (laboratório BSL-4) focado no escrutínio rápido e molecular de vírus letais.</p>
                 </div>
 
-                <div class="anim-el delay-3 bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                    <h4 class="font-black text-xl mb-2 text-black">UFMG & Unicamp</h4>
-                    <p class="text-sm text-gray-600 mb-4">Recordes de patentes (95 num ano na UFMG) e transferência tecnológica robusta para gestão do SUS.</p>
+                <div class="anim-el delay-3 bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-md hover:border-black transition">
+                    <h4 class="font-black text-lg md:text-xl mb-2 text-black">UFMG & Unicamp</h4>
+                    <p class="text-xs md:text-sm text-gray-600">As bases universitárias lideram patentes; UFMG submeteu 95 num único ano e Inova-Unicamp transfere IA massivamente para a gestão gratuita do SUS.</p>
                 </div>
 
-                <div class="anim-el delay-4 bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                    <h4 class="font-black text-xl mb-2 text-black">Hub Hospitalar</h4>
-                    <p class="text-sm text-gray-600 mb-4">Einstein (140+ startups aceleradas) e A.C. Camargo/INCA usando IA para laudos oncológicos em 5 dias.</p>
+                <div class="anim-el delay-4 bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-md hover:border-black transition">
+                    <h4 class="font-black text-lg md:text-xl mb-2 text-black">Hub Hospitalar SP</h4>
+                    <p class="text-xs md:text-sm text-gray-600">Einstein tornou-se a 3ª corporação inovadora geral do Brasil (acelerando +140 startups); A.C. Camargo usa redes de IA cortando laudos de 25 para 5 dias.</p>
                 </div>
             </div>
         </section>
 
         <!-- SLIDE 8: GOIÁS FARMACÊUTICO -->
         <section class="slide">
-            <div class="flex flex-col md:flex-row gap-12 items-center h-full">
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="factory" class="w-6 h-6 text-red-600"></i> Autossuficiência (IFA)</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Para produzir um comprimido, você precisa do <strong>IFA</strong> (Insumo Farmacêutico Ativo), que é o "ingrediente" que efetivamente cura. Durante anos, o Brasil dependeu de IFAs fabricados na China e na Índia. Quando a pandemia estourou, sofremos com a falta desses componentes.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 mb-3 border-l-2 border-red-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">A centralização industrial em Anápolis não é apenas progresso comercial, mas tática de segurança nacional. O investimento corporativo formidável visando a **fabricação local do IFA** quebra o gargalo de dependência estrangeira, protegendo o país das rupturas inevitáveis das cadeias de suprimentos globais.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-8 md:gap-12 items-center h-full mt-4 md:mt-0">
                 <div class="anim-el w-full md:w-1/2">
-                    <h2 class="text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">A Nova Fronteira</h2>
-                    <h3 class="text-6xl font-black leading-tight mb-6">GOIÁS ALÉM DO<br>AGRONEGÓCIO</h3>
-                    <p class="text-xl text-gray-600 mb-8">Anápolis consolida-se como o 2º maior polo farmacêutico do país, garantindo soberania em insumos críticos.</p>
+                    <h2 class="text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">A Nova Fronteira</h2>
+                    <h3 class="text-4xl md:text-6xl font-black leading-tight mb-4 md:mb-6">GOIÁS ALÉM DO<br>AGRONEGÓCIO</h3>
+                    <p class="text-base md:text-xl text-gray-600 mb-6 md:mb-8">O polo de Anápolis transcendeu sua função tradicional, consolidando Goiás como a fortaleza produtiva na segurança das cadeias biomédicas críticas nacionais.</p>
                     
-                    <div class="bg-red-50 text-red-900 p-6 rounded-xl border-l-4 border-red-600">
-                        <h4 class="font-black text-2xl mb-1">R$ 250 Milhões</h4>
-                        <p>Investimento recente para internalização da produção do IFA da escopolamina, reduzindo dependência externa.</p>
+                    <div class="bg-red-50 text-red-900 p-4 md:p-6 rounded-xl border-l-4 border-red-600">
+                        <h4 class="font-black text-xl md:text-2xl mb-1">Injeção de R$ 250 Milhões</h4>
+                        <p class="text-sm md:text-base">Investimento estratégico maciço (Brainfarma/Hypera) direcionado à internalização integral da base e produção local do Insumo Farmacêutico Ativo (IFA), blindando o mercado interno contra faltas externas.</p>
                     </div>
                 </div>
-                <div class="anim-el delay-1 w-full md:w-1/2 flex justify-center">
-                    <div class="relative w-full max-w-sm aspect-square bg-gray-100 rounded-full flex flex-col items-center justify-center border-8 border-white shadow-2xl">
-                        <div class="text-8xl font-black accent-red mb-2">20%</div>
-                        <p class="text-lg font-bold text-gray-500 uppercase tracking-widest text-center px-4">Da produção nacional<br>de medicamentos</p>
+                <div class="anim-el delay-1 w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+                    <div class="relative w-48 h-48 md:w-full md:max-w-sm md:aspect-square bg-white rounded-full flex flex-col items-center justify-center border-4 md:border-8 border-gray-100 shadow-xl md:shadow-2xl shrink-0 hover:scale-105 transition-transform duration-500">
+                        <div class="text-5xl md:text-8xl font-black accent-red mb-1 md:mb-2 leading-none">20%</div>
+                        <p class="text-xs md:text-lg font-bold text-gray-500 uppercase tracking-widest text-center px-2 md:px-4 leading-tight mt-2">Da produção nacional<br>de medicamentos</p>
                     </div>
                 </div>
             </div>
@@ -392,30 +614,48 @@
 
         <!-- SLIDE 9: GOIÁS FOMENTO E IA -->
         <section class="slide bg-blue-900 text-white">
-            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-blue-300 mb-12 text-center">Investimento e Otimização do Estado</h2>
+            <button class="btn-insight flex items-center gap-2 bg-blue-800 text-white px-5 py-3 rounded-full hover:bg-blue-700 transition text-sm font-bold border border-blue-400 shadow-lg" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-300"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay text-black">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-6 h-6 text-blue-600"></i> O Conceito GovTech</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Governos tradicionalmente têm amarras licitatórias que os impedem de comprar inovação rápida. **GovTech** é o ecossistema que legalmente aproxima as startups ágeis da gestão pública, permitindo a adoção de tecnologias (como IA) de forma quase imediata nas repartições.</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 mb-3 border-l-2 border-blue-600 pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Em Goiás, os fomentos históricos da FAPEG criaram um arcabouço pioneiro. Ao focar em editais CPSI (Contrato Público de Solução Inovadora), o governo usa IA para ler bancos de dados mortos de óbitos no SUS e cruzá-los com a fila de doação de órgãos (córneas), otimizando a salvação de centenas de pacientes bloqueados pela burocracia do papel.</p>
+                </div>
+            </div>
+
+            <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-blue-300 mb-8 md:mb-12 text-center mt-4 md:mt-0">Governança Pública de Alto Desempenho</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 h-full items-start">
-                <div class="anim-el delay-1">
-                    <div class="flex items-center gap-4 mb-4">
-                        <i data-lucide="trending-up" class="w-12 h-12 text-green-400"></i>
-                        <h3 class="text-4xl font-black">R$ 125,7 Milhões</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 h-full items-start mb-8 md:mb-0">
+                <div class="anim-el delay-1 bg-blue-800/50 p-6 md:p-8 rounded-3xl border border-blue-700 backdrop-blur-md">
+                    <div class="flex items-center gap-4 mb-6">
+                        <i data-lucide="trending-up" class="w-8 h-8 md:w-12 md:h-12 text-green-400"></i>
+                        <h3 class="text-3xl md:text-5xl font-black">R$ 125,7 Milhões</h3>
                     </div>
-                    <p class="text-blue-200 text-xl font-light mb-2">Injeção recorde do Governo de Goiás e FAPEG em fomento à inovação em 2025.</p>
+                    <p class="text-blue-200 text-base md:text-xl font-light mb-2">Injeção recorde consolidada via Governo de Goiás e autarquia FAPEG em fomento macro à inovação profunda (2025).</p>
                 </div>
 
-                <div class="anim-el delay-2 border-l-4 border-blue-400 pl-6">
-                    <h3 class="text-2xl font-black mb-4 flex items-center gap-3">
-                        <i data-lucide="bot" class="w-8 h-8 text-blue-300"></i> GovTech Saúde & SUS
+                <div class="anim-el delay-2 bg-blue-800/50 p-6 md:p-8 rounded-3xl border border-blue-700 backdrop-blur-md">
+                    <h3 class="text-xl md:text-2xl font-black mb-6 flex items-center gap-3">
+                        <i data-lucide="bot" class="w-6 h-6 md:w-8 md:h-8 text-blue-300"></i> GovTech no SUS (CPSI)
                     </h3>
-                    <p class="text-blue-100 text-lg mb-4">Uso prático de Inteligência Artificial para salvar vidas.</p>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-1 shrink-0"></i>
-                            <span>Edital exclusivo de R$ 4 Mi para gargalos do SUS.</span>
+                    <p class="text-blue-100 text-base md:text-lg mb-6">Uso focado e estrito de algoritmos para destravar fila humanitária:</p>
+                    <ul class="space-y-4 text-sm md:text-base font-bold text-white">
+                        <li class="flex items-start gap-3 bg-blue-900/50 p-3 rounded-lg border border-blue-800/50">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5 shrink-0"></i>
+                            <span>Edital contíguo exclusivo de R$ 4 Mi aportados para sanar gargalos do SUS central.</span>
                         </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-1 shrink-0"></i>
-                            <span>IA na notificação de óbitos para agilizar transplante de córneas, impactando 1.800 pacientes na fila.</span>
+                        <li class="flex items-start gap-3 bg-blue-900/50 p-3 rounded-lg border border-blue-800/50">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5 shrink-0"></i>
+                            <span>IA ativa notificando óbitos nos prontuários para agilizar o transplante cirúrgico de córneas (impacto em 1.800 pacientes parados na fila).</span>
                         </li>
                     </ul>
                 </div>
@@ -424,43 +664,58 @@
 
         <!-- SLIDE 10: GOIÁS HUB E STARTUPS -->
         <section class="slide">
-            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-10 text-center">Ecossistema Acadêmico & Deep Techs (Goiás)</h2>
+            <button class="btn-insight flex items-center gap-2 bg-white text-black px-5 py-3 rounded-full hover:bg-gray-100 transition text-sm font-bold border border-gray-200 shadow-md" onclick="toggleInsight(event)">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-500"></i> <span>Insight Estratégico</span> <span class="hidden md:inline-block text-[0.65rem] uppercase tracking-widest opacity-80 ml-2 border-l border-current pl-2 animate-pulse">Clique Aqui</span>
+            </button>
+            <div class="insight-overlay">
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <h4 class="font-black text-xl text-black flex items-center gap-2"><i data-lucide="network" class="w-6 h-6 text-black"></i> Descentralização Tecnológica</h4>
+                    <button onclick="toggleInsight(event)" class="p-2 bg-gray-100 rounded-full hover:bg-red-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <div class="mb-8">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 border-l-2 border-gray-400 pl-2">Contexto Didático</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">Deep Techs são empresas (muitas nascidas nas faculdades) que não criam apenas "aplicativos", mas resolvem problemas baseados em ciência pura e complexa (engenharia avançada, biologia, inteligência artificial massiva).</p>
+                </div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-black mb-3 border-l-2 border-black pl-2">Análise & Implicações</h5>
+                    <p class="text-gray-700 text-sm leading-relaxed">O CEIA sediado na UFG (maior centro da América Latina, atraindo +300 milhões em projetos) é a prova incontestável de que os talentos algorítmicos e patentes deixaram o monopólio geográfico de São Paulo. Ao implementar conceitos como <em>Lean Healthcare</em> (fluxos otimizados) usando dados massivos em hospitais locais, Goiás se torna ateliê biotecnológico para as corporações globais.</p>
+                </div>
+            </div>
+
+            <h2 class="anim-el text-xl md:text-3xl font-bold uppercase tracking-widest text-gray-400 mb-6 md:mb-10 text-center mt-4 md:mt-0">Ecossistema Deep Tech (O Hub Central)</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Col 1 -->
-                <div class="anim-el delay-1 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 md:mb-0">
+                <div class="anim-el delay-1 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
                         <i data-lucide="brain-circuit" class="w-8 h-8 accent-blue"></i>
                     </div>
-                    <h4 class="font-black text-2xl mb-4">UFG / CEIA</h4>
-                    <p class="text-gray-600 text-sm mb-4">Maior Centro de Excelência em IA da América Latina (R$ 300M+). </p>
-                    <ul class="text-sm text-gray-500 font-bold space-y-2">
-                        <li>• Projeto Codex.AI (prontuários em 7s)</li>
-                        <li>• Lean Healthcare em Hospitais (TRL 8-9)</li>
-                        <li>• 22 patentes submetidas num ano.</li>
+                    <h4 class="font-black text-2xl mb-4 text-black">A Gigante UFG / CEIA</h4>
+                    <p class="text-gray-600 text-sm mb-4">Referenciado o maior Centro de Excelência em IA focado da América Latina (aporte > R$ 300M).</p>
+                    <ul class="text-sm text-gray-800 font-bold space-y-2">
+                        <li class="flex gap-2"><span class="text-blue-500">•</span> Projeto Codex.AI (avalia prontuários em 7s)</li>
+                        <li class="flex gap-2"><span class="text-blue-500">•</span> Lean Healthcare escalável em Hospitais (TRL 8)</li>
+                        <li class="flex gap-2"><span class="text-blue-500">•</span> Exímias 22 patentes submetidas num ano letivo.</li>
                     </ul>
                 </div>
                 
-                <!-- Col 2 -->
-                <div class="anim-el delay-2 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                    <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                <div class="anim-el delay-2 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
                         <i data-lucide="microscope" class="w-8 h-8 text-green-600"></i>
                     </div>
-                    <h4 class="font-black text-2xl mb-4">IF Goiano + Fiocruz</h4>
-                    <p class="text-gray-600 text-sm">Parceria no interior (Rio Verde) para criação do CEPAV. Foco absoluto no monitoramento molecular integrado de endemias locais (Saúde Única).</p>
+                    <h4 class="font-black text-2xl mb-4 text-black">Saúde Única (Fiocruz + IF)</h4>
+                    <p class="text-gray-600 text-sm leading-relaxed">Em uníssono, a parceria consolidada no interior (Rio Verde) formou as bases do formidável CEPAV. Seu escrutínio recai no estrito monitoramento molecular preditivo das zonas de emergência e vigilância perimetral contínua nas endemias complexas rurais-urbanas.</p>
                 </div>
 
-                <!-- Col 3 -->
-                <div class="anim-el delay-3 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                    <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                <div class="anim-el delay-3 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6">
                         <i data-lucide="rocket" class="w-8 h-8 accent-red"></i>
                     </div>
-                    <h4 class="font-black text-2xl mb-4">Hub Goiás & Startups</h4>
-                    <p class="text-gray-600 text-sm mb-4">Deep Techs ganhando o mundo apoiadas pela incubação do estado.</p>
-                    <ul class="text-sm text-gray-500 font-bold space-y-2">
-                        <li>• Nanoterra (Nascida na UFG)</li>
-                        <li>• Epicentro IA e e-Goiás</li>
-                        <li>• Inovação global nascendo localmente.</li>
+                    <h4 class="font-black text-2xl mb-4 text-black">Hub Goiás & Startups</h4>
+                    <p class="text-gray-600 text-sm mb-4">Inovações profundas encabeçadas pela SECITEC rompendo barreiras para escalabilidade mundial.</p>
+                    <ul class="text-sm text-gray-800 font-bold space-y-2">
+                        <li class="flex gap-2"><span class="text-red-500">•</span> Nanoterra (Nascida puramente nas bancadas da UFG)</li>
+                        <li class="flex gap-2"><span class="text-red-500">•</span> Fomento aglutinador via e-Goiás e Epicentro IA</li>
+                        <li class="flex gap-2"><span class="text-red-500">•</span> Soluções nascendo no centro, impactando o globo.</li>
                     </ul>
                 </div>
             </div>
@@ -470,10 +725,10 @@
         <div class="progress-bar" id="progress"></div>
         
         <div class="controls">
-            <button onclick="prevSlide()" class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition text-black">
+            <button onclick="prevSlide()" class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition text-black shadow-md">
                 <i data-lucide="chevron-left"></i>
             </button>
-            <button onclick="nextSlide()" class="w-12 h-12 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition text-white">
+            <button onclick="nextSlide()" class="w-12 h-12 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition text-white shadow-lg">
                 <i data-lucide="chevron-right"></i>
             </button>
         </div>
@@ -491,6 +746,9 @@
 
         function updateSlider() {
             slides.forEach((slide, index) => {
+                // Fechar insights sempre que mudar de slide
+                slide.classList.remove('insight-open');
+
                 if(index === currentSlide) {
                     slide.classList.add('active');
                 } else {
@@ -501,6 +759,15 @@
             // Atualiza Barra de Progresso
             const progressPercent = ((currentSlide) / (slides.length - 1)) * 100;
             progressBar.style.width = `${progressPercent}%`;
+        }
+
+        // Função para Abrir/Fechar Painel Dinâmico de Insights Estratégicos
+        function toggleInsight(e) {
+            e.stopPropagation();
+            const slide = e.target.closest('.slide');
+            if (slide) {
+                slide.classList.toggle('insight-open');
+            }
         }
 
         function nextSlide() {
@@ -523,10 +790,13 @@
                 nextSlide();
             } else if (e.key === 'ArrowLeft') {
                 prevSlide();
+            } else if (e.key === 'Escape') {
+                // Fechar insight com ESC
+                slides[currentSlide].classList.remove('insight-open');
             }
         });
 
-        // Controles de Touch (Swipe) simples
+        // Controles de Touch (Swipe)
         let touchstartX = 0;
         let touchendX = 0;
 
@@ -540,6 +810,9 @@
         });
 
         function handleSwipe() {
+            // Ignorar swipe se o overlay do insight estiver aberto
+            if(slides[currentSlide].classList.contains('insight-open')) return;
+
             if (touchendX < touchstartX - 50) nextSlide();
             if (touchendX > touchstartX + 50) prevSlide();
         }
