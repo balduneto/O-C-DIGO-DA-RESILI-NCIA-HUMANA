@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Código da Resiliência Humana</title>
+    <!-- Tailwind CSS para Estilização Rápida e Layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Tipografia rigorosa: Helvetica como base primária */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #0f172a; /* Slate 900 - Quase preto para alto contraste, mas menos agressivo que #000 */
+            overflow: hidden; /* Previne rolagem, comportamento de slide */
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        /* Sistema de Slides */
+        #slider-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 8rem;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        /* Animações de Entrada dos Elementos Internos */
+        .slide .anim-el {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active .anim-el {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Delays em Cascata para os elementos */
+        .slide.active .delay-1 { transition-delay: 0.2s; }
+        .slide.active .delay-2 { transition-delay: 0.4s; }
+        .slide.active .delay-3 { transition-delay: 0.6s; }
+        .slide.active .delay-4 { transition-delay: 0.8s; }
+
+        /* Estilos Específicos Direção de Arte */
+        .big-number {
+            font-size: clamp(6rem, 12vw, 12rem);
+            line-height: 0.9;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+        }
+        
+        .accent-red { color: #E63946; }
+        .accent-blue { color: #1D3557; }
+        .accent-cyan { color: #457B9D; }
+
+        /* Grade Geométrica Sutil no Fundo */
+        .bg-grid {
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Navegação */
+        .controls {
+            position: absolute;
+            bottom: 2rem;
+            right: 4rem;
+            z-index: 100;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 6px;
+            background: #E63946;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .sources {
+            position: absolute;
+            bottom: 2rem;
+            left: 4rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            max-width: 50%;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 1024px) {
+            .slide { padding: 3rem 4rem; }
+            .big-number { font-size: 5rem; }
+        }
+        @media (max-width: 768px) {
+            .slide { padding: 2rem; }
+            .big-number { font-size: 4rem; }
+            .controls { right: 2rem; bottom: 1rem; }
+            .sources { left: 2rem; bottom: 1rem; max-width: 70%; }
+        }
+    </style>
+</head>
+<body class="bg-grid">
+
+    <div id="slider-container">
+
+        <!-- SLIDE 0: CAPA -->
+        <section class="slide active">
+            <div class="max-w-6xl">
+                <p class="anim-el text-xl font-bold tracking-widest text-gray-400 uppercase mb-4">Relatório Executivo de Inteligência</p>
+                <h1 class="anim-el delay-1 text-7xl md:text-8xl font-black leading-tight tracking-tighter text-black mb-6">
+                    O CÓDIGO DA<br>
+                    <span class="accent-red">RESILIÊNCIA HUMANA</span>
+                </h1>
+                <p class="anim-el delay-2 text-2xl text-gray-600 font-light max-w-3xl">
+                    Fronteiras Tecnológicas, Doenças do Futuro e a Economia da Longevidade. O mapa global da inovação biotecnológica (2025 - 2050).
+                </p>
+                <div class="anim-el delay-3 mt-12 flex items-center gap-4">
+                    <button onclick="nextSlide()" class="px-8 py-4 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition flex items-center gap-2">
+                        Iniciar Apresentação <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 1: TRANSIÇÃO EPIDEMIOLÓGICA -->
+        <section class="slide">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+                <div class="anim-el">
+                    <h2 class="text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">01. O Panorama Global</h2>
+                    <h3 class="text-5xl font-black leading-tight mb-8">O FARDO DAS<br>DOENÇAS CRÔNICAS</h3>
+                    <p class="text-xl text-gray-600 mb-6">De um total de 68 milhões de mortes anuais, apenas 10 causas respondem por quase toda a letalidade global, lideradas por doenças isquêmicas e AVC.</p>
+                    
+                    <div class="bg-gray-50 p-6 rounded-2xl border-l-4 border-black">
+                        <h4 class="font-bold flex items-center gap-2"><i data-lucide="brain" class="w-5 h-5"></i> A Pandemia Invisível</h4>
+                        <p class="text-gray-600 mt-2">Mais de <strong>1 bilhão</strong> de pessoas vivem com distúrbios mentais. Intervenções tecnológicas poderiam injetar <strong>US$ 4,4 trilhões</strong> de volta no PIB global até 2050.</p>
+                    </div>
+                </div>
+                <div class="anim-el delay-1 text-center">
+                    <div class="big-number accent-red">57%</div>
+                    <p class="text-2xl font-bold mt-4 uppercase tracking-wider">Dos óbitos globais<br>(39 milhões de vidas)</p>
+                </div>
+            </div>
+            <div class="sources delay-2 anim-el">Fontes: OMS (GHE 2024/2025) [1, 2, 3]; McKinsey Health Institute [4, 5].</div>
+        </section>
+
+        <!-- SLIDE 2: A CRISE METABÓLICA 2050 -->
+        <section class="slide">
+            <div class="flex flex-col h-full justify-center">
+                <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">Projeção 2050</h2>
+                <h3 class="anim-el delay-1 text-5xl font-black leading-tight mb-12">O ACELERADOR DO COLAPSO</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Infográfico 1 -->
+                    <div class="anim-el delay-1 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-red-500 transition">
+                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="activity" class="w-48 h-48"></i></div>
+                        <h4 class="text-7xl font-black accent-red mb-4">60%</h4>
+                        <p class="text-xl font-bold mb-2">Adultos com Obesidade</p>
+                        <p class="text-gray-500 text-sm">Atingindo 3,8 bilhões de pessoas globalmente. O motor principal da perda do *healthspan*.</p>
+                    </div>
+                    <!-- Infográfico 2 -->
+                    <div class="anim-el delay-2 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden group hover:border-blue-500 transition">
+                        <div class="absolute -right-8 -top-8 opacity-5"><i data-lucide="users" class="w-48 h-48"></i></div>
+                        <h4 class="text-7xl font-black accent-blue mb-4">1.6 Bi</h4>
+                        <p class="text-xl font-bold mb-2">Idosos (65+ anos)</p>
+                        <p class="text-gray-500 text-sm">O ápice da "Economia da Longevidade". Pela primeira vez, superando toda a população global de crianças.</p>
+                    </div>
+                    <!-- Infográfico 3 -->
+                    <div class="anim-el delay-3 bg-white border border-gray-200 p-8 rounded-3xl shadow-lg relative overflow-hidden bg-gray-900 text-white">
+                        <div class="absolute -right-8 -top-8 opacity-10"><i data-lucide="zap" class="w-48 h-48"></i></div>
+                        <h4 class="text-7xl font-black text-white mb-4">746 Mi</h4>
+                        <p class="text-xl font-bold mb-2">Crianças/Adolescentes</p>
+                        <p class="text-gray-400 text-sm">Com sobrepeso projetado. Uma bomba-relógio para a solvência dos sistemas de saúde.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="sources delay-4 anim-el">Fontes: The Lancet / IHME 2025; Fórum Econômico Mundial (2025) [6].</div>
+        </section>
+
+        <!-- SLIDE 3: AMEAÇAS SISTÊMICAS -->
+        <section class="slide bg-red-600 text-white">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+                <div class="anim-el">
+                    <div class="big-number text-white">39 Mi</div>
+                    <p class="text-3xl font-bold mt-4">Mortes projetadas por<br>Superbactérias até 2050</p>
+                </div>
+                <div class="anim-el delay-1">
+                    <h2 class="text-2xl font-bold uppercase tracking-widest text-red-200 mb-4">Ameaças Sistêmicas</h2>
+                    
+                    <div class="mb-8 border-l-4 border-white pl-6">
+                        <h3 class="text-3xl font-black mb-2">Resistência Antimicrobiana (AMR)</h3>
+                        <p class="text-red-100 text-lg">A crise silenciosa. O impacto econômico pode encolher o PIB global em <strong>US$ 1,7 Trilhão</strong> apenas no ano de 2050.</p>
+                    </div>
+
+                    <div class="border-l-4 border-white pl-6">
+                        <h3 class="text-3xl font-black mb-2">Clima & "Doença X"</h3>
+                        <p class="text-red-100 text-lg">O colapso climático expande vetores (250 mil mortes/ano extras). 25 famílias virais monitoradas para o próximo salto zoonótico.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="sources delay-2 anim-el text-red-200">Fontes: Projeto GRAM / IHME; Banco Mundial; OMS R&D Blueprint [7, 8, 9, 10].</div>
+        </section>
+
+        <!-- SLIDE 4: EIXO DO PODER GLOBAL -->
+        <section class="slide">
+            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-8 text-center">Geopolítica da Inovação</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-center">
+                <!-- Ásia -->
+                <div class="anim-el delay-1 flex flex-col items-center text-center">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="globe-2" class="w-12 h-12 text-black"></i>
+                    </div>
+                    <h3 class="text-2xl font-black mb-2 uppercase">Ásia no Topo</h3>
+                    <p class="text-gray-600 mb-6">Domínio agressivo em edição genética e saúde digital.</p>
+                    <div class="bg-gray-50 p-4 rounded-xl w-full">
+                        <span class="block text-4xl font-black accent-red mb-1">101.400</span>
+                        <span class="text-sm font-bold text-gray-500 uppercase">Patentes Válidas (Academia Chinesa)</span>
+                    </div>
+                </div>
+
+                <!-- EUA -->
+                <div class="anim-el delay-2 flex flex-col items-center text-center">
+                    <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="microscope" class="w-12 h-12 accent-blue"></i>
+                    </div>
+                    <h3 class="text-2xl font-black mb-2 uppercase">EUA & Medicina</h3>
+                    <p class="text-gray-600 mb-6">Monopólio de Venture Capital em IA de precisão.</p>
+                    <div class="bg-gray-50 p-4 rounded-xl w-full">
+                        <span class="block text-4xl font-black accent-blue mb-1">5.800+</span>
+                        <span class="text-sm font-bold text-gray-500 uppercase">Patentes Ativas (Harvard)</span>
+                    </div>
+                </div>
+
+                <!-- Europa -->
+                <div class="anim-el delay-3 flex flex-col items-center text-center">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="shield-check" class="w-12 h-12 text-black"></i>
+                    </div>
+                    <h3 class="text-2xl font-black mb-2 uppercase">Europa (ALE/UK)</h3>
+                    <p class="text-gray-600 mb-6">Liderança em eficiência e consórcios transnacionais.</p>
+                    <div class="bg-gray-50 p-4 rounded-xl w-full">
+                        <span class="block text-xl font-black text-black mb-1">Fraunhofer</span>
+                        <span class="text-sm font-bold text-gray-500 uppercase">Líder EU em RNA (TRL 4-5)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: ARSENAL TECNOLÓGICO -->
+        <section class="slide">
+            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">O Mapa da Disrupção</h2>
+            <h3 class="anim-el delay-1 text-5xl font-black leading-tight mb-12">TECNOLOGIAS DE FRONTEIRA</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Card 1 -->
+                <div class="anim-el delay-2 border-l-8 border-red-600 pl-6 py-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="dna" class="text-red-600 w-8 h-8"></i>
+                        <h4 class="text-2xl font-black">Plataformas mRNA (TRL 8-9)</h4>
+                    </div>
+                    <p class="text-gray-600">Além de vacinas virais (Missão 100 Dias). Combinação investigacional mRNA-4157 na oncologia reduziu recidivas agressivas de melanoma em 44%.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="anim-el delay-3 border-l-8 border-blue-600 pl-6 py-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="cpu" class="text-blue-600 w-8 h-8"></i>
+                        <h4 class="text-2xl font-black">IA no Drug Discovery</h4>
+                    </div>
+                    <p class="text-gray-600">Modelagem profunda de moléculas atinge assustadores <strong>80% a 90% de sucesso</strong> toxicológico na Fase I, cortando anos de pesquisa para meses.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="anim-el delay-4 border-l-8 border-black pl-6 py-2 mt-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="pill" class="text-black w-8 h-8"></i>
+                        <h4 class="text-2xl font-black">Senolíticos (Geroscience)</h4>
+                    </div>
+                    <p class="text-gray-600">Coquetéis "D+Q" e vacinas como SenoVax (TRL 5-6) visam eliminar células envelhecidas (zumbis) para restaurar tecidos e combater Alzheimer e câncer.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="anim-el delay-4 border-l-8 border-gray-400 pl-6 py-2 mt-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="printer" class="text-gray-500 w-8 h-8"></i>
+                        <h4 class="text-2xl font-black">Edição Genética e Bioimpressão 3D</h4>
+                    </div>
+                    <p class="text-gray-600">Terapias in vivo (CRISPR) curando doenças antes intratáveis. Bioimpressão de tecidos complexos evoluindo para transplantes maciços.</p>
+                </div>
+            </div>
+            <div class="sources delay-4 anim-el mt-8">Fontes: CEPI 3.0; Moderna Clinical Data; Global Readiness Index [10-14].</div>
+        </section>
+
+        <!-- SLIDE 6: BRASIL PROTAGONISMO -->
+        <section class="slide bg-black text-white">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+                <div class="anim-el delay-1 text-center lg:text-left">
+                    <div class="big-number text-green-400">59k</div>
+                    <p class="text-3xl font-bold mt-4 uppercase">Pedidos de Patentes Biotec (2010-2025)</p>
+                </div>
+                <div class="anim-el">
+                    <h2 class="text-2xl font-bold uppercase tracking-widest text-gray-400 mb-4">Soberania Sul-Sul</h2>
+                    <h3 class="text-5xl font-black mb-6 leading-tight">O BRASIL NO<br>EPICENTRO DA INOVAÇÃO</h3>
+                    <p class="text-gray-300 text-xl mb-6">Rompendo a lógica da mera produção fabril. O Brasil se consolida não apenas como consumidor, mas como <strong>hub criador</strong> de Propriedade Intelectual global.</p>
+                    <p class="text-green-400 font-bold text-lg"><i data-lucide="check-circle" class="inline w-5 h-5 mb-1"></i> INPI atesta mais de 23.500 submissões ativas e mais de 13.600 concedidas até 2025.</p>
+                </div>
+            </div>
+            <div class="sources delay-2 anim-el text-gray-500">Fonte: Auditoria Instituto Nacional da Propriedade Industrial (INPI) 2025 [15].</div>
+        </section>
+
+        <!-- SLIDE 7: VANGUARDA BRASILEIRA -->
+        <section class="slide">
+            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-10 text-center">Instituições Nacionais de Vanguarda</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="anim-el delay-1 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h4 class="font-black text-xl mb-2 text-black">Fiocruz</h4>
+                    <p class="text-sm text-gray-600 mb-4">Expansão global com hub em Portugal. Testes rápidos de 20 min (Hantavírus) e biocápsulas ecológicas (TRL 8-9).</p>
+                </div>
+                
+                <div class="anim-el delay-2 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h4 class="font-black text-xl mb-2 text-black">CNPEM (Sirius)</h4>
+                    <p class="text-sm text-gray-600 mb-4">Acelerador de partículas e o novo Orion (BSL-4) para modelagem rápida molecular de vírus (TRL 3-5).</p>
+                </div>
+
+                <div class="anim-el delay-3 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h4 class="font-black text-xl mb-2 text-black">UFMG & Unicamp</h4>
+                    <p class="text-sm text-gray-600 mb-4">Recordes de patentes (95 num ano na UFMG) e transferência tecnológica robusta para gestão do SUS.</p>
+                </div>
+
+                <div class="anim-el delay-4 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h4 class="font-black text-xl mb-2 text-black">Hub Hospitalar</h4>
+                    <p class="text-sm text-gray-600 mb-4">Einstein (140+ startups aceleradas) e A.C. Camargo/INCA usando IA para laudos oncológicos em 5 dias.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: GOIÁS FARMACÊUTICO -->
+        <section class="slide">
+            <div class="flex flex-col md:flex-row gap-12 items-center h-full">
+                <div class="anim-el w-full md:w-1/2">
+                    <h2 class="text-3xl font-bold uppercase tracking-widest text-gray-400 mb-2">A Nova Fronteira</h2>
+                    <h3 class="text-6xl font-black leading-tight mb-6">GOIÁS ALÉM DO<br>AGRONEGÓCIO</h3>
+                    <p class="text-xl text-gray-600 mb-8">Anápolis consolida-se como o 2º maior polo farmacêutico do país, garantindo soberania em insumos críticos.</p>
+                    
+                    <div class="bg-red-50 text-red-900 p-6 rounded-xl border-l-4 border-red-600">
+                        <h4 class="font-black text-2xl mb-1">R$ 250 Milhões</h4>
+                        <p>Investimento recente para internalização da produção do IFA da escopolamina, reduzindo dependência externa.</p>
+                    </div>
+                </div>
+                <div class="anim-el delay-1 w-full md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-sm aspect-square bg-gray-100 rounded-full flex flex-col items-center justify-center border-8 border-white shadow-2xl">
+                        <div class="text-8xl font-black accent-red mb-2">20%</div>
+                        <p class="text-lg font-bold text-gray-500 uppercase tracking-widest text-center px-4">Da produção nacional<br>de medicamentos</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 9: GOIÁS FOMENTO E IA -->
+        <section class="slide bg-blue-900 text-white">
+            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-blue-300 mb-12 text-center">Investimento e Otimização do Estado</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 h-full items-start">
+                <div class="anim-el delay-1">
+                    <div class="flex items-center gap-4 mb-4">
+                        <i data-lucide="trending-up" class="w-12 h-12 text-green-400"></i>
+                        <h3 class="text-4xl font-black">R$ 125,7 Milhões</h3>
+                    </div>
+                    <p class="text-blue-200 text-xl font-light mb-2">Injeção recorde do Governo de Goiás e FAPEG em fomento à inovação em 2025.</p>
+                </div>
+
+                <div class="anim-el delay-2 border-l-4 border-blue-400 pl-6">
+                    <h3 class="text-2xl font-black mb-4 flex items-center gap-3">
+                        <i data-lucide="bot" class="w-8 h-8 text-blue-300"></i> GovTech Saúde & SUS
+                    </h3>
+                    <p class="text-blue-100 text-lg mb-4">Uso prático de Inteligência Artificial para salvar vidas.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-1 shrink-0"></i>
+                            <span>Edital exclusivo de R$ 4 Mi para gargalos do SUS.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-1 shrink-0"></i>
+                            <span>IA na notificação de óbitos para agilizar transplante de córneas, impactando 1.800 pacientes na fila.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 10: GOIÁS HUB E STARTUPS -->
+        <section class="slide">
+            <h2 class="anim-el text-3xl font-bold uppercase tracking-widest text-gray-400 mb-10 text-center">Ecossistema Acadêmico & Deep Techs (Goiás)</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Col 1 -->
+                <div class="anim-el delay-1 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="brain-circuit" class="w-8 h-8 accent-blue"></i>
+                    </div>
+                    <h4 class="font-black text-2xl mb-4">UFG / CEIA</h4>
+                    <p class="text-gray-600 text-sm mb-4">Maior Centro de Excelência em IA da América Latina (R$ 300M+). </p>
+                    <ul class="text-sm text-gray-500 font-bold space-y-2">
+                        <li>• Projeto Codex.AI (prontuários em 7s)</li>
+                        <li>• Lean Healthcare em Hospitais (TRL 8-9)</li>
+                        <li>• 22 patentes submetidas num ano.</li>
+                    </ul>
+                </div>
+                
+                <!-- Col 2 -->
+                <div class="anim-el delay-2 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                    <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="microscope" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                    <h4 class="font-black text-2xl mb-4">IF Goiano + Fiocruz</h4>
+                    <p class="text-gray-600 text-sm">Parceria no interior (Rio Verde) para criação do CEPAV. Foco absoluto no monitoramento molecular integrado de endemias locais (Saúde Única).</p>
+                </div>
+
+                <!-- Col 3 -->
+                <div class="anim-el delay-3 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                    <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="rocket" class="w-8 h-8 accent-red"></i>
+                    </div>
+                    <h4 class="font-black text-2xl mb-4">Hub Goiás & Startups</h4>
+                    <p class="text-gray-600 text-sm mb-4">Deep Techs ganhando o mundo apoiadas pela incubação do estado.</p>
+                    <ul class="text-sm text-gray-500 font-bold space-y-2">
+                        <li>• Nanoterra (Nascida na UFG)</li>
+                        <li>• Epicentro IA e e-Goiás</li>
+                        <li>• Inovação global nascendo localmente.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROGRESS BAR E CONTROLES -->
+        <div class="progress-bar" id="progress"></div>
+        
+        <div class="controls">
+            <button onclick="prevSlide()" class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition text-black">
+                <i data-lucide="chevron-left"></i>
+            </button>
+            <button onclick="nextSlide()" class="w-12 h-12 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition text-white">
+                <i data-lucide="chevron-right"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Script de Controle da Apresentação -->
+    <script>
+        // Inicializa Ícones
+        lucide.createIcons();
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progress');
+
+        function updateSlider() {
+            slides.forEach((slide, index) => {
+                if(index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            
+            // Atualiza Barra de Progresso
+            const progressPercent = ((currentSlide) / (slides.length - 1)) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlider();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        }
+
+        // Controles de Teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Controles de Touch (Swipe) simples
+        let touchstartX = 0;
+        let touchendX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchendX < touchstartX - 50) nextSlide();
+            if (touchendX > touchstartX + 50) prevSlide();
+        }
+
+        // Inicializa
+        updateSlider();
+    </script>
+</body>
+</html>
